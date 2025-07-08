@@ -20,6 +20,9 @@ $(call inherit-product, vendor/lge/msm8996-common/msm8996-common-vendor.mk)
 
 PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := true
 
+# eBPF
+PRODUCT_PRODUCT_PROPERTIES += ro.bpf.kver_override=5.10.239
+
 # AAPT
 PRODUCT_AAPT_CONFIG := normal
 PRODUCT_AAPT_PREF_CONFIG := 560dpi
