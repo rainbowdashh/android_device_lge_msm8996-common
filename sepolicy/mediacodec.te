@@ -7,3 +7,5 @@ allow mediacodec mpctl_data_file:dir search;
 allow mediacodec mpctl_data_file:sock_file write;
 allow mediacodec mpctl_socket:dir search;
 allow mediacodec mpctl_socket:sock_file write;
+
+allow mediacodec hal_graphics_allocator_aidl_vndservice:service_manager find;

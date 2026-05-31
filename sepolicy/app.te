@@ -1,1 +1,6 @@
 get_prop(appdomain, exported_camera_prop);
+
+# Harmless app sandbox probes; keep these accesses denied, but stop audit spam.
+dontaudit appdomain vendor_file:file read;
+dontaudit appdomain property_type:file read;
+dontaudit isolated_app content_capture_service:service_manager find;
