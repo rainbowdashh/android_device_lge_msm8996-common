@@ -155,7 +155,7 @@ on property:sys.shutdown.requested=*
     stop vendor.per_proxy
 
 service vendor.qseecomd /vendor/bin/qseecomd
-    class core
+    class early_hal
     user root
     group root
 
@@ -179,4 +179,3 @@ service vendor.adsprpcd /vendor/bin/adsprpcd
     class main
     user media
     group media
-
