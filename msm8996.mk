@@ -139,6 +139,8 @@ PRODUCT_PACKAGES += \
     ueventd.qcom.rc
 
 # Display
+$(call soong_config_set_bool,libui,legacy_gralloc,true)
+
 PRODUCT_PACKAGES += \
     android.hardware.graphics.allocator@2.0-impl \
     android.hardware.graphics.allocator@2.0-service \
