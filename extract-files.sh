@@ -51,6 +51,13 @@ function blob_fixup() {
     vendor/bin/pm-service)
         grep -q libutils-v33.so "${2}" || "${PATCHELF_0_18}" --add-needed "libutils-v33.so" "${2}"
         ;;
+    vendor/etc/data/netmgr_config.xml)
+        sed -i '/<listitem name[[:space:]]*=[[:space:]]*"msm8996">/,/<\/listitem>/{
+            /name="rtm_rmnet_data_enabled"/d
+            /name="rmnet_data_enabled"/i\
+      <data name="rtm_rmnet_data_enabled" type="int"> 1 </data>
+        }' "${2}"
+        ;;
     vendor/lib/hw/camera.msm8996.so)
         sed -i "s/service.bootanim.exit/service.bootanim.zzzz/g" "${2}"
         grep -q libshim_camera.so "${2}" || "${PATCHELF_0_18}" --add-needed "libshim_camera.so" "${2}"
