@@ -16,6 +16,7 @@ LOCAL_MODULE       := init.power.sh
 LOCAL_MODULE_TAGS  := optional
 LOCAL_MODULE_CLASS := EXECUTABLES
 LOCAL_SRC_FILES    := bin/init.power.sh
+LOCAL_CHECK_ELF_FILES := false
 LOCAL_VENDOR_MODULE    := true
 include $(BUILD_PREBUILT)
 
@@ -34,6 +35,7 @@ LOCAL_MODULE       := init.qcom.sh
 LOCAL_MODULE_TAGS  := optional
 LOCAL_MODULE_CLASS := EXECUTABLES
 LOCAL_SRC_FILES    := bin/init.qcom.sh
+LOCAL_CHECK_ELF_FILES := false
 LOCAL_VENDOR_MODULE    := true
 # init.radio.sh is defined in variant trees
 LOCAL_REQUIRED_MODULES := init.radio.sh
@@ -44,6 +46,7 @@ LOCAL_MODULE       := init.qcom.sensors.sh
 LOCAL_MODULE_TAGS  := optional
 LOCAL_MODULE_CLASS := EXECUTABLES
 LOCAL_SRC_FILES    := bin/init.qcom.sensors.sh
+LOCAL_CHECK_ELF_FILES := false
 LOCAL_VENDOR_MODULE    := true
 include $(BUILD_PREBUILT)
 
@@ -52,6 +55,7 @@ LOCAL_MODULE       := init.qcom.graphics.sh
 LOCAL_MODULE_TAGS  := optional
 LOCAL_MODULE_CLASS := EXECUTABLES
 LOCAL_SRC_FILES    := bin/init.qcom.graphics.sh
+LOCAL_CHECK_ELF_FILES := false
 LOCAL_VENDOR_MODULE    := true
 include $(BUILD_PREBUILT)
 
