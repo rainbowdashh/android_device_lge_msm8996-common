@@ -1,2 +1,20 @@
 soong_namespace {
 }
+
+cc_prebuilt_library_shared {
+    name: "libbinder-v32",
+    vendor_available: true,
+    strip: {
+        none: true,
+    },
+    target: {
+        android_arm: {
+            srcs: ["prebuilt/arm/libbinder-v32.so"],
+        },
+        android_arm64: {
+            srcs: ["prebuilt/arm64/libbinder-v32.so"],
+        },
+    },
+    compile_multilib: "both",
+    check_elf_files: false,
+}
