@@ -439,6 +439,10 @@ PRODUCT_PACKAGES += \
     libprotobuf-cpp-lite-v29
 
 # Wi-Fi
+# Use the Broadcom supplicant config; omit the conflicting Qualcomm module.
+PRODUCT_SOURCE_ROOT_DIRS += \
+    -hardware/qcom-caf/wlan/qcwcn/config/Android.bp
+
 PRODUCT_PACKAGES += \
     android.hardware.wifi-service \
     hostapd \
