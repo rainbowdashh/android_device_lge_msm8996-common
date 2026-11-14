@@ -206,7 +206,7 @@ PRODUCT_COPY_FILES += \
 
 # Health
 PRODUCT_PACKAGES += \
-    android.hardware.health-service.qti \
+    android.hardware.health-service.qti_msm8996 \
     android.hardware.health-service.qti_recovery
 
 $(call soong_config_set,lineage_recovery,bootloader_message_offset,128)

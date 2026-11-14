@@ -1,3 +1,6 @@
+# Health
+/(vendor|system/vendor)/bin/hw/android\.hardware\.health-service\.qti_msm8996 u:object_r:hal_health_default_exec:s0
+
 # Audio
 /(vendor|system/vendor)/bin/hw/android\.hardware\.audio\.service\.lge_msm8996           u:object_r:hal_audio_default_exec:s0
 

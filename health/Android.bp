@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: Apache-2.0
+
+cc_binary {
+    name: "android.hardware.health-service.qti_msm8996",
+    defaults: ["android.hardware.health-service.qti-defaults"],
+    recovery_available: false,
+    init_rc: ["android.hardware.health-service.qti_msm8996.rc"],
+    overrides: ["charger"],
+}
