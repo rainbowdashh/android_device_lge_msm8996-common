@@ -308,6 +308,7 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/non_ab_device.mk)
 # Power
 PRODUCT_PACKAGES += \
     android.hardware.power-service-qti \
+    lge_msm8996_display_config \
     vendor.qti.hardware.perf@1.0
 
 PRODUCT_COPY_FILES += \

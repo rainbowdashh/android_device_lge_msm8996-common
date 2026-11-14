@@ -45,6 +45,9 @@ TARGET_2ND_CPU_VARIANT_RUNTIME := kryo
 
 TARGET_BOARD_PLATFORM := msm8996
 
+# The power HAL uses the common display AIDL headers.
+override SOONG_CONFIG_qtidisplay_headers_namespace := vendor/qcom/opensource/commonsys-intf/display
+
 # Audio
 AUDIO_FEATURE_ENABLED_AAC_ADTS_OFFLOAD := true
 AUDIO_FEATURE_ENABLED_ACDB_LICENSE := true
