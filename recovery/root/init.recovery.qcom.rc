@@ -1,6 +1,20 @@
-on fs
-    wait /dev/block/platform/soc/${ro.boot.bootdevice}
-    symlink /dev/block/platform/soc/${ro.boot.bootdevice} /dev/block/bootdevice
+on early-init
+    mkdir /dev/block 0755 root root
+    symlink /dev/block /dev/block/bootdevice
 
 on init
+    setprop sys.usb.controller 6a00000.dwc3
     setprop sys.usb.configfs 1
+
+# Generic root handling must not let adbd claim sideload's ep0.
+on property:service.adb.root=1 && property:sys.usb.config=none
+    stop adbd
+    setprop sys.usb.ffs.ready 0
+
+# Enable ADB also needs to select the USB configuration on user builds.
+on property:ro.adb.secure.recovery=0
+    setprop sys.usb.config adb
+
+# minadbd, launched by recovery, exclusively owns FunctionFS in sideload mode.
+on property:sys.usb.config=sideload
+    stop adbd

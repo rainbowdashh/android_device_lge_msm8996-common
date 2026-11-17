@@ -122,12 +122,24 @@ $(call soong_config_set_bool,libion,legacy_impl,true)
 
 # Kernel
 BOARD_KERNEL_BASE := 0x80000000
-BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom  msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 cma=32M@0-0xffffffff androidboot.boot_devices=soc/624000.ufshc loop.max_part=7
+BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom  msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 cma=32M@0-0xffffffff androidboot.boot_devices=any loop.max_part=7
 BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
 BOARD_KERNEL_PAGESIZE := 4096
 BOARD_RAMDISK_USE_XZ := true
 TARGET_KERNEL_SOURCE := kernel/lge/msm8996
 TARGET_KERNEL_CONFIG := vendor/lge/lge_msm8996_defconfig
+
+# Partitions
+TARGET_COPY_OUT_VENDOR := vendor
+TARGET_COPY_OUT_PRODUCT := product
+TARGET_COPY_OUT_SYSTEM_EXT := system_ext
+TARGET_COPY_OUT_ODM := odm
+BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
+BOARD_PRODUCTIMAGE_FILE_SYSTEM_TYPE := ext4
+BOARD_SYSTEM_EXTIMAGE_FILE_SYSTEM_TYPE := ext4
+BOARD_ODMIMAGE_FILE_SYSTEM_TYPE := ext4
+BOARD_SUPER_PARTITION_GROUPS := lge_dynamic_partitions
+BOARD_LGE_DYNAMIC_PARTITIONS_PARTITION_LIST := system system_ext product vendor odm
 
 # Media
 TARGET_USES_ION := true
@@ -145,7 +157,6 @@ TARGET_HAS_NO_WLAN_STATS := true
 BOARD_USES_QCOM_HARDWARE := true
 
 # Recovery
-TARGET_RECOVERY_DEVICE_DIRS += $(COMMON_PATH)
 TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab.qcom
 
 # Releasetools
@@ -156,7 +167,7 @@ TARGET_RECOVERY_UPDATER_LIBS := librecovery_updater_msm8996
 ENABLE_VENDOR_RIL_SERVICE := true
 
 # Root directories
-BOARD_ROOT_EXTRA_FOLDERS := firmware persist persist-lg sns mpt
+BOARD_ROOT_EXTRA_FOLDERS := firmware metadata persist persist-lg sns mpt
 
 # SELinux policies
 include device/lineage/sepolicy/libion/sepolicy.mk

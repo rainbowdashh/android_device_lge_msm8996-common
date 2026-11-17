@@ -19,6 +19,10 @@
 $(call inherit-product, vendor/lge/msm8996-common/msm8996-common-vendor.mk)
 
 PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := true
+PRODUCT_USE_DYNAMIC_PARTITIONS := true
+
+# Recovery
+PRODUCT_PACKAGES += init.recovery.qcom.rc
 
 # eBPF
 PRODUCT_PRODUCT_PROPERTIES += ro.bpf.kver_override=5.10.239
@@ -122,6 +126,9 @@ $(call inherit-product, frameworks/native/build/phone-xhdpi-4096-dalvik-heap.mk)
 PRODUCT_SYSTEM_SERVER_COMPILER_FILTER := speed-profile
 
 # Device-specific Init-files
+PRODUCT_COPY_FILES += \
+    device/lge/msm8996-common/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_RAMDISK)/fstab.qcom
+
 PRODUCT_PACKAGES += \
     fstab.qcom \
     init.qcom.rc \
