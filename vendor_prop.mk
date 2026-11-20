@@ -159,7 +159,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.lmk.thrashing_limit_decay=40 \
     ro.lmk.swap_free_low_percentage=15 \
     ro.lmk.swap_util_max=90 \
-    ro.lmk.use_minfree_levels=true
+    ro.lmk.use_minfree_levels=false
 
 # Media
 PRODUCT_PROPERTY_OVERRIDES += \
