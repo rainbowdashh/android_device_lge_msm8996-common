@@ -53,8 +53,7 @@ on property:init.svc.vendor.charger=running
     setprop sys.usb.configfs 1
 
 on early-init
-    # Aconfig needs writable metadata before its early-init action. Keep it
-    # in physical cache, mounted by first-stage init, without changing the GPT.
+    # Aconfig needs writable metadata during early-init.
     mkdir /cache/metadata 0755 root root
     mount none /cache/metadata /metadata bind
     restorecon /metadata
@@ -122,6 +121,17 @@ on init
 
 on post-fs
     chmod 0755 /sys/kernel/debug/tracing
+
+    # RFS expects the vendor persist path.
+    mkdir /mnt/vendor 0755 root root
+    mkdir /mnt/vendor/persist 0771 system system
+    mount none /persist /mnt/vendor/persist bind
+
+    # Lineage health controls charging through these nodes.
+    chown system system /sys/class/power_supply/battery/battery_charging_enabled
+    chmod 0660 /sys/class/power_supply/battery/battery_charging_enabled
+    chown system system /sys/class/power_supply/battery/charging_enabled
+    chmod 0660 /sys/class/power_supply/battery/charging_enabled
 
 on early-boot
     # Set RLIMIT_MEMLOCK to 64MB
