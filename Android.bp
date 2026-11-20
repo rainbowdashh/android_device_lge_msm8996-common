@@ -39,3 +39,9 @@ prebuilt_etc {
     sub_dir: "init",
     recovery: true,
 }
+
+linker_config {
+    name: "lge_msm8996_system_ext_linker_config",
+    src: "configs/linker/system_ext.json",
+    system_ext_specific: true,
+}

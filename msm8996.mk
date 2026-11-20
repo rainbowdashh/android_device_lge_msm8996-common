@@ -463,3 +463,10 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.wifi.direct.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.wifi.direct.xml \
     frameworks/native/data/etc/android.hardware.wifi.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.wifi.xml
+
+# Camera linker dependencies
+PRODUCT_VENDOR_LINKER_CONFIG_FRAGMENTS += \
+    device/lge/msm8996-common/configs/linker/vendor.json
+
+PRODUCT_PACKAGES += \
+    lge_msm8996_system_ext_linker_config

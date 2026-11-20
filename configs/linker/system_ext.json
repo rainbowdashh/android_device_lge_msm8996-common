@@ -1,0 +1,5 @@
+{
+    "provideLibs": [
+        "libcamera_client.so"
+    ]
+}

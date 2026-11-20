@@ -1,0 +1,7 @@
+{
+    "requireLibs": [
+        "libandroid.so",
+        "libcamera_client.so",
+        "libjnigraphics.so"
+    ]
+}
