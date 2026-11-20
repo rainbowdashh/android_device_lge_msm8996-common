@@ -75,8 +75,8 @@ write /sys/devices/system/cpu/cpu2/cpufreq/schedutil/up_rate_limit_us 2250
 write /sys/module/msm_thermal/core_control/enabled 1
 
 # input boost configuration
-write /sys/module/cpu_boost/parameters/input_boost_freq "0:1324800 2:1324800"
-write /sys/module/cpu_boost/parameters/input_boost_ms 40
+write /sys/devices/system/cpu/cpu_boost/input_boost_freq "0:1324800 2:1324800"
+write /sys/devices/system/cpu/cpu_boost/input_boost_ms 40
 
 # Setting b.L scheduler parameters
 write /proc/sys/kernel/sched_migration_fixup 1
