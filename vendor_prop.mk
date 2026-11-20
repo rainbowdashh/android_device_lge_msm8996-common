@@ -166,6 +166,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     vendor.vidc.enc.disable.pq=true \
     vendor.video.disable.ubwc=1
 
+# Full redraws avoid stale content on Adreno 530.
+PRODUCT_PROPERTY_OVERRIDES += \
+    debug.hwui.use_partial_updates=false
+
 # OpenGLES
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.renderengine.backend=skiaglthreaded \
