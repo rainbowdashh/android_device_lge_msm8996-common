@@ -585,7 +585,7 @@ system/etc/permissions/com.vzw.android.xml|19867261b1ac17dc7beea3514f86529a2ac5a
 system/etc/permissions/com.vzw.avs.xml|01e01429f9fab8de9b12eb941a17b8ad6b5b519e
 system/etc/permissions/com.vzw.vzwapnlib.xml|a9c540b9badabcd365759cb3052bb700b035638c
 system/framework/VZWAVSLibrary.jar|7533f87a5d1406cda2a3981181a18e11f01c51b2
-system/priv-app/UnifiedSettingsApp/UnifiedSettingsApp.apk|74a62f02f665b4a0b20103e6ceee09363e20fdff
+system/priv-app/UnifiedSettingsApp/UnifiedSettingsApp.apk|74a62f02f665b4a0b20103e6ceee09363e20fdff|428b6f9a80672afeb2901c6db203a5517b83b8fe
 
 # Widevine - from daisy - QKQ1.191002.002
 vendor/bin/hw/android.hardware.drm@1.2-service.widevine|e130b8f1c8d46d8a185b00cba5ff8a2a871ee94c

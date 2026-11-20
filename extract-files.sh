@@ -23,6 +23,9 @@ source "$HELPER"
 
 function blob_fixup() {
     case "${1}" in
+    system/priv-app/UnifiedSettingsApp/UnifiedSettingsApp.apk)
+        apktool_patch "${2}" "${MY_DIR}/patches/UnifiedSettingsApp"
+        ;;
     system_ext/etc/permissions/qti_libpermissions.xml)
         sed -i "s/name=\"android.hidl.manager-V1.0-java/name=\"android.hidl.manager@1.0-java/g" "${2}"
         ;;
