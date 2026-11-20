@@ -465,7 +465,7 @@ vendor/bin/qti|08bdcf9cb284cbc9e884fa919f04b560fee44d03
 vendor/bin/rmt_storage|4cd57922075ada02799c4ee5fdc2f3eb881d6e52
 vendor/bin/tftp_server|c529f5d24ed0188843e4a227cae8245bd60614d6
 vendor/etc/data/dsi_config.xml;FIX_XML|59728e03a09db35ffc27fa122ab65cbe174bf0e1|1e1667f631d81a2d3153b5002b9012c4bc7db393
-vendor/etc/data/netmgr_config.xml;FIX_XML|ba526ae0d12579118e0825b21110caf58d8f2d7b|a7c0218e8f2304b18576c8d6d659e4890b50d990
+vendor/etc/data/netmgr_config.xml;FIX_XML|ba526ae0d12579118e0825b21110caf58d8f2d7b|eb5beafb9ecd1c4b026c6f1e44797951283bcb17
 vendor/etc/init/dataadpl.rc|cd4907d9bfd438fe5f5c86f5d6cec590ac0bac2a
 vendor/etc/init/dataqti.rc|6abfd1a850d782adbbb6f42c9d8ca870036b2ad1
 vendor/etc/init/netmgrd.rc|fd3457c69a9fab11b87d0d1b494188fe089684cd
@@ -585,7 +585,7 @@ system/etc/permissions/com.vzw.android.xml|19867261b1ac17dc7beea3514f86529a2ac5a
 system/etc/permissions/com.vzw.avs.xml|01e01429f9fab8de9b12eb941a17b8ad6b5b519e
 system/etc/permissions/com.vzw.vzwapnlib.xml|a9c540b9badabcd365759cb3052bb700b035638c
 system/framework/VZWAVSLibrary.jar|7533f87a5d1406cda2a3981181a18e11f01c51b2
-system/priv-app/UnifiedSettingsApp/UnifiedSettingsApp.apk|74a62f02f665b4a0b20103e6ceee09363e20fdff|428b6f9a80672afeb2901c6db203a5517b83b8fe
+system/priv-app/UnifiedSettingsApp/UnifiedSettingsApp.apk|74a62f02f665b4a0b20103e6ceee09363e20fdff|3d911b7166d9b65b81f6e052b0f0da47a19a034d
 
 # Widevine - from daisy - QKQ1.191002.002
 vendor/bin/hw/android.hardware.drm@1.2-service.widevine|e130b8f1c8d46d8a185b00cba5ff8a2a871ee94c
