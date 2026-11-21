@@ -1,49 +1,27 @@
 /*
- * Copyright 2018 The LineageOS Project
+ * Copyright (C) 2017, 2026 The LineageOS Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
-
-#define LOG_TAG "android.hardware.ir@1.0-service.lge"
-
-#include <hidl/HidlTransportSupport.h>
+#define LOG_TAG "android.hardware.ir-service.lge"
 
 #include "ConsumerIr.h"
 
-using android::hardware::configureRpcThreadpool;
-using android::hardware::joinRpcThreadpool;
+#include <android/binder_manager.h>
+#include <android/binder_process.h>
+#include <log/log.h>
 
-using android::hardware::ir::V1_0::IConsumerIr;
-using android::hardware::ir::V1_0::implementation::ConsumerIr;
-
-using android::OK;
-using android::status_t;
+using aidl::android::hardware::ir::ConsumerIr;
 
 int main() {
-    android::sp<IConsumerIr> service = new ConsumerIr();
-
-    configureRpcThreadpool(1, true /*callerWillJoin*/);
-
-    status_t status = service->registerAsService();
-    if (status != OK) {
-        ALOGE("Cannot register ConsumerIr HAL service.");
+    ABinderProcess_setThreadPoolMaxThreadCount(0);
+    auto service = ndk::SharedRefBase::make<ConsumerIr>();
+    const std::string instance = std::string(ConsumerIr::descriptor) + "/default";
+    binder_status_t status = AServiceManager_addService(service->asBinder().get(), instance.c_str());
+    if (status != STATUS_OK) {
+        ALOGE("Cannot register IR HAL service: %d", status);
         return 1;
     }
-
-    ALOGI("ConsumerIr HAL service ready.");
-
-    joinRpcThreadpool();
-
-    ALOGI("ConsumerIr HAL service failed to join thread pool.");
+    ABinderProcess_joinThreadPool();
     return 1;
 }

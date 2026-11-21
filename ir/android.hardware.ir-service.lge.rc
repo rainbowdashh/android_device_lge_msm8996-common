@@ -1,0 +1,5 @@
+service vendor.ir-hal /vendor/bin/hw/android.hardware.ir-service.lge
+    interface aidl android.hardware.ir.IConsumerIr/default
+    class hal
+    user system
+    group system

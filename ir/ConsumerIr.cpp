@@ -1,82 +1,47 @@
 /*
  * Copyright (C) 2013 The Android Open Source Project
- * Copyright (C) 2017-2018 The LineageOS Project
+ * Copyright (C) 2017-2018, 2026 The LineageOS Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 #define LOG_TAG "ConsumerIrService"
 
-#include <fcntl.h>
-#include <linux/lirc.h>
+#include "ConsumerIr.h"
 
 #include <log/log.h>
 
-#include "ConsumerIr.h"
+extern "C" int transmitIr(const char* dev, int baudRate, int frequency, int pattern[],
+                          int pattern_len);
 
-namespace android {
-namespace hardware {
-namespace ir {
-namespace V1_0 {
-namespace implementation {
+namespace aidl::android::hardware::ir {
 
-// LG specific defines
-#define IR_DEVICE "/dev/ttyMSM1"
-#define LG_IR_BAUD_RATE 115200
-
-extern "C" {
-extern int transmitIr(const char *dev, int baudRate, int frequency, int pattern[], int pattern_len);
+ndk::ScopedAStatus ConsumerIr::getCarrierFreqs(std::vector<ConsumerIrFreqRange>* ranges) {
+    *ranges = {{.minHz = 25000, .maxHz = 125000}};
+    return ndk::ScopedAStatus::ok();
 }
 
-static hidl_vec<ConsumerIrFreqRange> rangeVec{
-    {.min = 25000, .max = 125000},
-};
-
-enum LG_TRANSMIT_IR_RETURN_CODES {
-    IR_SUCCESS,
-    IR_FAIL,
-    IR_INVALID_PORT,
-    IR_INVALID_BAUDRATE,
-    IR_ERROR_OPEN_PORT,
-    IR_ERROR_WRITE,
-    IR_ERROR_READ,
-    IR_INVALID_DATA_SIZE,
-    IR_INVALID_DATA,
-    IR_MAX_DURATIONS_EXCEEDED
-};
-
-ConsumerIr::ConsumerIr() {}
-
-Return<bool> ConsumerIr::transmit(int32_t carrierFreq, const hidl_vec<int32_t>& pattern) {
-    size_t entries = pattern.size();
-    int rc;
-
-    // call into libcir_driver
-    ALOGD("transmitting pattern at %d Hz", carrierFreq);
-    rc = transmitIr(IR_DEVICE, LG_IR_BAUD_RATE, carrierFreq, const_cast<int32_t*>(pattern.data()), sizeof(int32_t) * entries);
-    if (rc != IR_SUCCESS) {
-        ALOGE("transmitIr() failed, error %d\n", rc);
-        return false;
+ndk::ScopedAStatus ConsumerIr::transmit(int32_t carrierFreqHz,
+                                      const std::vector<int32_t>& pattern) {
+    if (carrierFreqHz < 25000 || carrierFreqHz > 125000 || pattern.empty()) {
+        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
     }
-    return true;
+    int64_t duration = 0;
+    for (int32_t slice : pattern) {
+        if (slice <= 0 || (duration += slice) > 2000000) {
+            return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
+        }
+    }
+
+    // libcir_driver accepts a mutable pattern and its size in bytes.
+    std::vector<int32_t> mutablePattern(pattern);
+    std::lock_guard<std::mutex> lock(mLock);
+    int rc = transmitIr("/dev/ttyMSM1", 115200, carrierFreqHz, mutablePattern.data(),
+                        static_cast<int>(mutablePattern.size() * sizeof(int32_t)));
+    if (rc != 0) {
+        ALOGE("transmitIr failed: %d", rc);
+        return ndk::ScopedAStatus::fromServiceSpecificError(rc);
+    }
+    return ndk::ScopedAStatus::ok();
 }
 
-Return<void> ConsumerIr::getCarrierFreqs(getCarrierFreqs_cb _hidl_cb) {
-    _hidl_cb(true, rangeVec);
-    return Void();
-}
-
-}  // namespace implementation
-}  // namespace V1_0
-}  // namespace ir
-}  // namespace hardware
-}  // namespace android
+}  // namespace aidl::android::hardware::ir
