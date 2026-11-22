@@ -16,8 +16,11 @@
  */
 
 #include <ctype.h>
+#include <dirent.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -30,18 +33,9 @@
 #define MAX_LENGTH                    50
 
 #define CPU_USAGE_FILE                "/proc/stat"
-#define TEMPERATURE_FILE_FORMAT       "/sys/class/thermal/thermal_zone%d/temp"
+#define THERMAL_CLASS                  "/sys/class/thermal"
 #define CPU_ONLINE_FILE_FORMAT        "/sys/devices/system/cpu/cpu%d/online"
-
-#define BATTERY_SENSOR_NUM            29
-#define GPU_SENSOR_NUM                14
-#define SKIN_SENSOR_NUM               24
-
-const int CPU_SENSORS[] = {4, 6, 9, 11};
-
-#define CPU_NUM                       (sizeof(CPU_SENSORS) / sizeof(int))
-// Sum of CPU_NUM + 3 for GPU, BATTERY, and SKIN.
-#define TEMPERATURE_NUM               7
+#define CPU_NUM                       4
 
 //qcom, therm-reset-temp
 #define CPU_SHUTDOWN_THRESHOLD        115
@@ -57,122 +51,109 @@ const int CPU_SENSORS[] = {4, 6, 9, 11};
 #define BATTERY_LABEL                 "battery"
 #define SKIN_LABEL                    "skin"
 
-const char *CPU_LABEL[] = {"CPU0", "CPU1", "CPU2", "CPU3"};
+static const char *const CPU_LABEL[CPU_NUM] = {"CPU0", "CPU1", "CPU2", "CPU3"};
 
-/**
- * Reads device temperature.
- *
- * @param sensor_num Number of sensor file with temperature.
- * @param type Device temperature type.
- * @param name Device temperature name.
- * @param mult Multiplier used to translate temperature to Celsius.
- * @param throttling_threshold Throttling threshold for the temperature.
- * @param shutdown_threshold Shutdown threshold for the temperature.
- * @param out Pointer to temperature_t structure that will be filled with current
- *     values.
- *
- * @return 0 on success or negative value -errno on error.
- */
-static ssize_t read_temperature(int sensor_num, int type, const char *name, float mult,
-        float throttling_threshold, float shutdown_threshold, float vr_throttling_threshold,
-        temperature_t *out) {
-    FILE *file;
-    char file_name[MAX_LENGTH];
-    float temp;
+struct sensor {
+    const char *zone_type;
+    const char *name;
+    int type;
+    float scale;
+    float throttling_threshold;
+    float shutdown_threshold;
+    float vr_threshold;
+};
 
-    sprintf(file_name, TEMPERATURE_FILE_FORMAT, sensor_num);
-    file = fopen(file_name, "r");
-    if (file == NULL) {
-        ALOGE("%s: failed to open: %s", __func__, strerror(errno));
-        return -errno;
-    }
-    if (1 != fscanf(file, "%f", &temp)) {
-        fclose(file);
-        ALOGE("%s: failed to read a float: %s", __func__, strerror(errno));
-        return errno ? -errno : -EIO;
-    }
+#define CPU_SENSOR(zone, label) { zone, label, DEVICE_TEMPERATURE_CPU, 0.1f, \
+        CPU_THROTTLING_THRESHOLD, CPU_SHUTDOWN_THRESHOLD, UNKNOWN_TEMPERATURE }
 
-    fclose(file);
+static const struct sensor sensors[] = {
+    // Preserve the CPU sensor identities observed on H990 with the old HAL.
+    CPU_SENSOR("tsens_tz_sensor3", "CPU0"),
+    CPU_SENSOR("tsens_tz_sensor5", "CPU1"),
+    CPU_SENSOR("tsens_tz_sensor8", "CPU2"),
+    CPU_SENSOR("tsens_tz_sensor10", "CPU3"),
+    // The KGSL DTS node selects sensor14 (the thermal-engine alias is separate).
+    { "tsens_tz_sensor14", GPU_LABEL, DEVICE_TEMPERATURE_GPU, 0.1f,
+        UNKNOWN_TEMPERATURE, UNKNOWN_TEMPERATURE, UNKNOWN_TEMPERATURE },
+    { "battery", BATTERY_LABEL, DEVICE_TEMPERATURE_BATTERY, 0.001f,
+        UNKNOWN_TEMPERATURE, BATTERY_SHUTDOWN_THRESHOLD, UNKNOWN_TEMPERATURE },
+    // Keep the legacy skin proxy. The PMIC ADC already reports degrees Celsius.
+    { "pa_therm0", SKIN_LABEL, DEVICE_TEMPERATURE_SKIN, 1.0f,
+        SKIN_THROTTLING_THRESHOLD, SKIN_SHUTDOWN_THRESHOLD, VR_THROTTLED_BELOW_MIN },
+};
 
-    (*out) = (temperature_t) {
-        .type = type,
-        .name = name,
-        .current_value = temp * mult,
-        .throttling_threshold = throttling_threshold,
-        .shutdown_threshold = shutdown_threshold,
-        .vr_throttling_threshold = vr_throttling_threshold
-    };
-
-    return 0;
-}
-
-static ssize_t get_cpu_temperatures(temperature_t *list, size_t size) {
-    size_t cpu;
-
-    for (cpu = 0; cpu < CPU_NUM; cpu++) {
-        if (cpu >= size) {
-            break;
-        }
-        // tsens_tz_sensor[4,6,9,11]: temperature in decidegrees Celsius.
-        ssize_t result = read_temperature(CPU_SENSORS[cpu], DEVICE_TEMPERATURE_CPU, CPU_LABEL[cpu],
-                0.1, CPU_THROTTLING_THRESHOLD, CPU_SHUTDOWN_THRESHOLD, UNKNOWN_TEMPERATURE,
-                &list[cpu]);
-        if (result != 0) {
-            return result;
-        }
-    }
-    return cpu;
-}
+#define TEMPERATURE_NUM (sizeof(sensors) / sizeof(sensors[0]))
 
 static ssize_t get_temperatures(thermal_module_t *module, temperature_t *list, size_t size) {
-    ssize_t result = 0;
-    size_t current_index = 0;
-
+    (void)module;
     if (list == NULL) {
         return TEMPERATURE_NUM;
     }
-
-    result = get_cpu_temperatures(list, size);
-    if (result < 0) {
-        return result;
+    if (size > TEMPERATURE_NUM) {
+        size = TEMPERATURE_NUM;
     }
-    current_index += result;
+    if (size == 0) {
+        return TEMPERATURE_NUM;
+    }
 
-    // GPU temperature.
-    if (current_index < size) {
-        // tsens_tz_sensor14: temperature in decidegrees Celsius.
-        result = read_temperature(GPU_SENSOR_NUM, DEVICE_TEMPERATURE_GPU, GPU_LABEL, 0.1,
-                UNKNOWN_TEMPERATURE, UNKNOWN_TEMPERATURE, UNKNOWN_TEMPERATURE,
-                &list[current_index]);
-        if (result < 0) {
-            return result;
+    bool found[TEMPERATURE_NUM] = {false};
+    for (size_t i = 0; i < size; ++i) {
+        list[i] = (temperature_t) {
+            .type = sensors[i].type,
+            .name = sensors[i].name,
+            .current_value = UNKNOWN_TEMPERATURE,
+            .throttling_threshold = sensors[i].throttling_threshold,
+            .shutdown_threshold = sensors[i].shutdown_threshold,
+            .vr_throttling_threshold = sensors[i].vr_threshold,
+        };
+    }
+
+    DIR *zones = opendir(THERMAL_CLASS);
+    if (zones == NULL) {
+        int error = errno;
+        ALOGE("Cannot open thermal zones: %s", strerror(error));
+        return -error;
+    }
+
+    const char prefix[] = "thermal_zone";
+    struct dirent *entry;
+    while ((entry = readdir(zones)) != NULL) {
+        if (strncmp(entry->d_name, prefix, sizeof(prefix) - 1) != 0 ||
+                !isdigit((unsigned char)entry->d_name[sizeof(prefix) - 1])) {
+            continue;
         }
-        current_index++;
-    }
-
-    // Battery temperature.
-    if (current_index < size) {
-        // tsens_tz_sensor29: battery: temperature in millidegrees Celsius.
-        result = read_temperature(BATTERY_SENSOR_NUM, DEVICE_TEMPERATURE_BATTERY, BATTERY_LABEL,
-                0.001, UNKNOWN_TEMPERATURE, BATTERY_SHUTDOWN_THRESHOLD, UNKNOWN_TEMPERATURE,
-                &list[current_index]);
-        if (result < 0) {
-            return result;
+        char path[sizeof(THERMAL_CLASS) + sizeof(entry->d_name) + sizeof("/temp")];
+        char type[MAX_LENGTH];
+        snprintf(path, sizeof(path), "%s/%s/type", THERMAL_CLASS, entry->d_name);
+        FILE *file = fopen(path, "r");
+        if (file == NULL) {
+            continue;
         }
-        current_index++;
-    }
-
-    // Skin temperature.
-    if (current_index < size) {
-        // tsens_tz_sensor24: temperature in Celsius.
-        result = read_temperature(SKIN_SENSOR_NUM, DEVICE_TEMPERATURE_SKIN, SKIN_LABEL, 1.,
-                SKIN_THROTTLING_THRESHOLD, SKIN_SHUTDOWN_THRESHOLD, VR_THROTTLED_BELOW_MIN,
-                &list[current_index]);
-        if (result < 0) {
-            return result;
+        char *line = fgets(type, sizeof(type), file);
+        fclose(file);
+        if (line == NULL) {
+            continue;
         }
-        current_index++;
+        type[strcspn(type, "\n")] = '\0';
+
+        for (size_t i = 0; i < size; ++i) {
+            if (found[i] || strcmp(type, sensors[i].zone_type) != 0) {
+                continue;
+            }
+            snprintf(path, sizeof(path), "%s/%s/temp", THERMAL_CLASS, entry->d_name);
+            file = fopen(path, "r");
+            if (file != NULL) {
+                float raw;
+                if (fscanf(file, "%f", &raw) == 1 && isfinite(raw)) {
+                    list[i].current_value = raw * sensors[i].scale;
+                    found[i] = true;
+                }
+                fclose(file);
+            }
+            break;
+        }
     }
+    closedir(zones);
     return TEMPERATURE_NUM;
 }
 
