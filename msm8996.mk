@@ -32,6 +32,9 @@ PRODUCT_AAPT_CONFIG := normal
 PRODUCT_AAPT_PREF_CONFIG := 560dpi
 
 # Audio
+PRODUCT_SYSTEM_PROPERTIES += \
+    audio.service.client_wait_ms=30000
+
 PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-impl \
     android.hardware.audio@6.0 \
